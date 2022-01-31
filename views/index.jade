@@ -1,0 +1,59 @@
+extends layout
+
+block content
+  h1 Rholang tests
+  pre new brewery, stdout(`rho:io:stdout`) in {
+      |  brewery!("2 golden please")
+      ||
+      |for(order <- brewery){
+      |  stdout!("Beer on the way, skol!")
+      |}
+    }
+  br
+  br
+  button(onclick='deploy()') Deploy contract
+  br
+  br
+  button(onclick='propose()') Propose
+  br
+  br
+  button(onclick='placeOrder()') Place order
+  script(src="https://code.jquery.com/jquery-3.6.0.min.js")
+  script.
+    var deploy = function() {
+      $.get('http://localhost:40403/api/blocks/1', function(blockData) {
+        $.post('deploy-contract', {"blockNumber": blockData[0].blockNumber}, function( deployResponse ) {
+            console.log(deployResponse);
+
+            $.ajax({
+              method: "POST",
+              url: "http://localhost:40403/api/deploy",
+              data: JSON.stringify(deployResponse.deploy),
+              contentType: "text/plain;charset=UTF-8",
+              dataType: "json"
+            }).done(function( msg ) {
+                console.log(msg);
+            });
+          });
+      });
+    }
+
+    var placeOrder = function() {
+     $.post('place-order', {'beer': $('#code').val()}, function( deployResponse ) {
+        console.log(deployResponse);
+
+        $.ajax({
+          method: "POST",
+          url: "http://localhost:40403/api/explore-deploy",
+          data: 'new brewery(`rho:io:stdout`) in { brewery!("An IPA please.")}',
+          contentType: "text/plain;charset=UTF-8",
+          dataType: "json"
+        }).done(function( msg ) {
+            console.log(msg);
+        });
+      });
+    }
+
+    var propose = function() {
+     $.get('propose');
+    }
